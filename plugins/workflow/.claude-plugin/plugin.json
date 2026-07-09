@@ -1,0 +1,8 @@
+{
+  "name": "workflow",
+  "description": "Contribution-workflow skills (issues, PRs, history) for the schemalabz team.",
+  "version": "0.1.0",
+  "author": {
+    "name": "schemalabz"
+  }
+}

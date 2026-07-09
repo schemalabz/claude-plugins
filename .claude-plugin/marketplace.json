@@ -1,0 +1,14 @@
+{
+  "name": "schemalabz",
+  "owner": {
+    "name": "schemalabz"
+  },
+  "description": "Shared Claude Code plugins for the schemalabz team.",
+  "plugins": [
+    {
+      "name": "workflow",
+      "source": "./plugins/workflow",
+      "description": "Contribution-workflow skills: issues, PRs, history."
+    }
+  ]
+}
