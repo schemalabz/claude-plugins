@@ -28,3 +28,17 @@ Drop it at `plugins/<plugin>/skills/<name>/SKILL.md`. A new plugin also needs an
 `.claude-plugin/marketplace.json`. Plugins omit `version`, so every pushed commit is treated
 as a new release — teammates pick it up automatically (with `autoUpdate`) or on the next
 `/plugin marketplace update schemalabz`. No manual version bumping.
+
+## Develop a plugin locally
+
+Marketplace installs are frozen copies in `~/.claude/plugins/cache` — edits in your clone don't reach them, and an installed copy silently shadows a same-named skills-dir plugin. For live iteration, uninstall first, then symlink your working tree:
+
+```bash
+# enter dev mode (after: /plugin uninstall <plugin>@schemalabz)
+ln -s /path/to/claude-plugins/plugins/<plugin> ~/.claude/skills/<plugin>
+
+# exit dev mode (then reinstall from the marketplace)
+rm ~/.claude/skills/<plugin>
+```
+
+It loads as `<plugin>@skills-dir` on the next session; `SKILL.md` edits apply immediately, other components (hooks, agents) after `/reload-plugins`.
