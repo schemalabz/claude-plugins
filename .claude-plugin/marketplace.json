@@ -9,6 +9,11 @@
       "name": "workflow",
       "source": "./plugins/workflow",
       "description": "Contribution-workflow skills: issues, PRs, history."
+    },
+    {
+      "name": "infra",
+      "source": "./plugins/infra",
+      "description": "Infrastructure skills: DigitalOcean inspection, domains, DNS."
     }
   ]
 }

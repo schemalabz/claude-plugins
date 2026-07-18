@@ -1,0 +1,7 @@
+{
+  "name": "infra",
+  "description": "Infrastructure skills (DigitalOcean, DNS, deployments) for the schemalabz team.",
+  "author": {
+    "name": "schemalabz"
+  }
+}
