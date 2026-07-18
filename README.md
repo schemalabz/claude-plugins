@@ -11,13 +11,20 @@ Add to the project's `.claude/settings.json`, then `/plugin install workflow@sch
 {
   "extraKnownMarketplaces": {
     "schemalabz": {
-      "source": { "source": "github", "repo": "schemalabz/claude-plugins" }
+      "source": { "source": "github", "repo": "schemalabz/claude-plugins" },
+      "autoUpdate": true
     }
   }
 }
 ```
 
+`autoUpdate` is per-marketplace: it keeps every plugin installed from `schemalabz`
+current by refreshing in the background after startup. Without it, pick up changes
+manually with `/plugin marketplace update schemalabz`.
+
 ## Add a skill
 
 Drop it at `plugins/<plugin>/skills/<name>/SKILL.md`. A new plugin also needs an entry in
-`.claude-plugin/marketplace.json`. Bump the plugin's `version` on a breaking change.
+`.claude-plugin/marketplace.json`. Plugins omit `version`, so every pushed commit is treated
+as a new release — teammates pick it up automatically (with `autoUpdate`) or on the next
+`/plugin marketplace update schemalabz`. No manual version bumping.
