@@ -32,7 +32,7 @@ All of these must hold — report any failure and **stop** (the user can overrid
    ```bash
    git log --oneline $REMOTE/<base>..$REMOTE/<head-branch> | grep -E "fixup!|squash!"
    ```
-   If any exist, point to the `cleanup-history` skill and stop.
+   If any exist, point to the `atomic-commits` skill and stop.
 
 Also record `isCrossRepository` — it decides branch deletion in Step 3.
 
@@ -50,7 +50,7 @@ git cherry -v $REMOTE/<base> $REMOTE/<head-branch>
 - **Merge commit** — multiple commits, each an atomic, logically-separate change with conventional messages (`type(scope): subject`). History is worth preserving.
 - **Squash** — a single concern spread over incremental commits, WIP/fixup-style messages, or one commit total. History adds noise, not information.
 
-Borderline (good commits mixed with noise)? Mention that `cleanup-history` / `restructure-commits` could make it merge-commit-worthy, but don't run them — v1 of this skill only assesses.
+Borderline (good commits mixed with noise)? Mention that `atomic-commits` could make it merge-commit-worthy, but don't run it — v1 of this skill only assesses.
 
 **Present the commit list, your classification with a one-line reason, and the recommendation. Ask the user to confirm the strategy before proceeding.**
 
