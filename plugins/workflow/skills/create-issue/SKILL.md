@@ -18,9 +18,13 @@ gh repo view --json nameWithOwner -q .nameWithOwner
 
 If `$ARGUMENTS` includes a repo reference (e.g., `schemalabz/opencouncil-tasks`), use that instead.
 
+In a multi-repo system, the default can mislead:
+- **Cause unknown** (typical bug report) → file where the symptom is observed.
+- **Cause known** → file where the fix lands, and cross-link with `owner/repo#N` references. If significant investigation led here, use `create-investigation-issue` instead.
+
 ## Search for Related Issues
 
-Before drafting, ALWAYS search GitHub for related existing issues and PRs:
+Before drafting, ALWAYS search GitHub for related existing issues and PRs — in a multi-repo system, search every repo of the system, not just the one you're filing in:
 
 ```bash
 gh search issues "<relevant keywords>" --repo <REPO> --limit 5

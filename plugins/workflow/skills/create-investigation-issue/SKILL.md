@@ -18,19 +18,23 @@ Use this skill when:
 
 Use `create-issue` instead for: simple bug reports, feature requests, tasks, or issues where the cause is obvious.
 
-## Determine the Repository
+## Choose the Repository
 
-Use the current git repo by default:
+If `$ARGUMENTS` includes a repo reference, use that. In a single-repo project, use the current git repo:
 
 ```bash
 gh repo view --json nameWithOwner -q .nameWithOwner
 ```
 
-If `$ARGUMENTS` includes a repo reference, use that instead.
+In a multi-repo system, the current checkout is where you *investigated*, not automatically where the issue belongs. Where you file depends on what you know:
+
+- **Cause unknown** → file where the symptom is observed (that's where reporters and users will look).
+- **Cause known** (the investigation-issue case) → file where the fix lands, even if that's not the repo you're in. The assignee should find the ticket in the repo they'll open the PR against.
+- **Fixes span repos** → file with the most-causal component. Do NOT pre-open per-repo follow-up issues — open them only once the team has chosen an approach, and say so in the Fix Options section.
 
 ## Search for Related Issues
 
-Before drafting, ALWAYS search GitHub for related existing issues:
+Before drafting, ALWAYS search GitHub for related existing issues — in a multi-repo system, search every repo of the system, not just the one you're filing in:
 
 ```bash
 gh search issues "<relevant keywords>" --repo <REPO> --limit 5
@@ -53,6 +57,8 @@ Use actual labels returned. Do not assume label names.
 **Dual purpose.** The top half (Summary, Impact, Root Cause, Fix Options) is the actionable ticket. The bottom half (Evidence, Investigation Trail) is lasting documentation. Both live in one artifact.
 
 **Precision over brevity.** Name specific files, functions, configuration values, and mechanisms. Link to code when possible. Vague descriptions ("the cache is slow") don't help future investigators.
+
+**Frame cross-repo defects as contract violations.** When the cause lives in one repo and the symptom in another, describe the defect in the host repo's vocabulary as a broken contract between the components ("we emit coordinates that claim point precision we don't have"), not as a story about the downstream feature. Downstream symptoms appear under Impact as illustration, with `owner/repo#N` cross-links — they are not the issue's structure.
 
 **Separate observation from interpretation.** Evidence is what you measured/observed. Root Cause is your interpretation of why. Keep them distinct so readers can validate your reasoning.
 
@@ -177,6 +183,9 @@ gh issue create --repo <REPO> --title "<TITLE>" --body "<BODY>" --label "<label1
 ```
 
 Report the issue URL back to the user.
+
+### Step 4: Close the loop (cross-repo only)
+If a symptom-side issue exists in another repo, post a short comment there linking the new issue — one or two sentences on what the investigation explains. If the symptom is user-visible but has no issue where it's observed, ask the user whether to file a brief symptom stub there. Draft any comment and get approval before posting.
 
 ## Guidelines
 - NEVER create an issue without showing a preview and getting explicit approval
