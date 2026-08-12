@@ -42,3 +42,20 @@ rm ~/.claude/skills/<plugin>
 ```
 
 It loads as `<plugin>@skills-dir` on the next session; `SKILL.md` edits apply immediately, other components (hooks, agents) after `/reload-plugins`.
+
+## browser-scripting: one-time setup
+
+The `browser-scripting` skill (in the `workflow` plugin) drives a real browser and reads pages as markdown. It needs Nix, which supplies a matched Playwright and Chromium:
+
+```bash
+curl -fsSL https://install.determinate.systems/nix | sh -s -- install
+```
+
+That is the whole setup — the skill invokes the tools with `nix run`, so there is nothing to install per-tool. The first run downloads ~240 MB of prebuilt browsers and takes a few minutes; later runs are instant.
+
+To avoid flake resolution on every call, install them into your profile:
+
+```bash
+nix profile install github:schemalabz/toolkit#page-read
+nix profile install github:schemalabz/toolkit#playwright-run
+```
