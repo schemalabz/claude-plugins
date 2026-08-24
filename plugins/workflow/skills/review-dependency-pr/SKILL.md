@@ -27,7 +27,15 @@ git rev-list --count FETCH_HEAD..upstream/main    # staleness
 1. **Is it a Dependabot PR?** If not, stop — wrong skill.
 2. **Is it still open?** Dependabot closes and replaces PRs when it re-resolves. Reviewing a corpse, or commenting `@dependabot rebase` on one, wastes a cycle.
 3. **Is it stale?** If it is behind main, **stop and request a rebase**. Every verdict below is computed against the wrong baseline otherwise — a run from before a toolchain change proves nothing about today.
-4. **Is this change already in flight?** Search open PRs for one touching the same files or dependency. Rebuilding work that already exists is the most expensive mistake available, and it costs one `gh pr list` to avoid.
+4. **Is this change already in flight?** Rebuilding work that already exists is the most expensive mistake available, and it costs one query to avoid. Scope the search to the **dependency**, not the file — every npm bump touches `package.json`, so a file-level check matches everything and tells you nothing:
+
+```bash
+# for each other open PR, does its package.json hunk mention this dependency?
+gh api repos/<owner>/<repo>/pulls/<n>/files \
+  --jq '.[] | select(.filename=="package.json") | .patch' | grep -E '^[+-].*"<dependency>"'
+```
+
+For a config or workflow change, compare the actual hunk rather than the filename.
 
 Then **discover the repo's shape** rather than assuming it — this is what lets the skill work outside the repo it was written in:
 
