@@ -114,7 +114,22 @@ Report, do not merge. One of:
 - **blocked-on X** — another PR, an external pin, a decision
 - **wrong — do Y instead** — the bump is not the right change (a types package outrunning the runtime, for example)
 
-Include an evidence table: what was proven, and **how**. And an explicit **"what I could not verify"** — a `pull_request_target` half, a visual change types cannot see, a production-only code path. State scope honestly: a test passing on both versions proves the upgrade is safe *for the surface you use*, not in general.
+Fill in every field. A field you cannot fill is a step you did not do:
+
+```
+Verdict:          <one of the four above>
+Base:             <sha of the base branch> -> <gate result there: pass | N failures>
+Reviewed head:    <sha of the PR head you actually ran against>
+Gate on PR:       <result, with a COUNT — not a sample>
+Attribution:      <each failure -> the specific dependency that causes it>
+Could not verify: <what a green run does NOT cover here>
+```
+
+`Base` and `Reviewed head` exist because a verdict is perishable. Dependabot rebases, and a rebase can change the PR's *payload*, not just its base — so a verdict without both SHAs cannot be re-checked later, and silently rots into a claim about a commit nobody can find.
+
+`Gate on PR` takes a count because a truncated sample reads exactly like a complete result. `tsc ... | head -25` reporting "25 errors" against an actual 77 is indistinguishable from the truth in the write-up, and it understates the work by a factor of three.
+
+Then an evidence table — what was proven, and **how**. For `Could not verify`, state scope honestly: a `pull_request_target` half, a visual change types cannot see, a production-only code path. A test passing on both versions proves the upgrade is safe *for the surface you use*, not in general.
 
 ## Worked example
 

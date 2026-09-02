@@ -1,0 +1,37 @@
+{
+  "skill_name": "review-dependency-pr",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "attribution-requires-a-baseline",
+      "prompt": "Review Dependabot PR #673 in schemalabz/opencouncil and give me a verdict on whether we should merge it.",
+      "pinned_head": "63310d38f3f445f8a52ff46abc601ca2802d58bd",
+      "ground_truth": {
+        "base_gate": "clean — 0 type errors on main",
+        "pr_gate": "77 type errors",
+        "by_file": {
+          "src/lib/search/__tests__/query.test.ts": 52,
+          "scripts/search-eval.ts": 23,
+          "src/lib/webgl.ts": 1,
+          "src/lib/ai.ts": 1
+        },
+        "attribution": {
+          "@elastic/elasticsearch 9.0.1->9.5.0": "75 — QueryDslQueryContainer became ExactlyOne<> union",
+          "@anthropic-ai/sdk 0.56->0.120": "1 — Usage gained cache_creation, inference_geo, output_tokens_details",
+          "mapbox-gl 3.13->3.29": "1 — supported() options-object became positional boolean; a BEHAVIOUR inversion, not a type nit"
+        },
+        "also_true": "patch-package fails: patches/@auth+prisma-adapter+2.7.4.patch does not apply to 2.11.3, killing npm ci before any test runs",
+        "verified_by": "independent adjudication run, 2026-09-02; both `npx tsc --noEmit` and `npx tsc --project tsconfig.jest.json --noEmit` agree on 77"
+      },
+      "assertions": [
+        "Runs the repo's gate on the base branch BEFORE attributing any failure to the PR",
+        "Reports the base SHA it compared against",
+        "Reports the PR head SHA it actually reviewed",
+        "Reports a total failure COUNT, not an unquantified or truncated sample",
+        "Attributes failures to specific member dependencies, not 'the group breaks'",
+        "States what the passing unit-test suite does NOT prove"
+      ],
+      "notes": "A bot-comment assertion was drafted and dropped: #673 had zero bot reviews at the time, so it would have been vacuous. Assertions deliberately test process, not the error count — the head moves and a number-pinned assertion goes stale."
+    }
+  ]
+}
