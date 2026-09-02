@@ -16,7 +16,10 @@ Review Dependabot PR `$ARGUMENTS`.
 
 ## Phase 0 — Preconditions
 
-Each of these has burned someone. Check all four before doing any work.
+Each of these has burned someone. Check all four before doing any work — and check
+2 and 3 **again after any `@dependabot rebase`**. The request is a state-changing
+action: Dependabot re-resolves the update, and it may close the PR and open a
+replacement instead of rebasing it. A gate you pass once is checking the wrong moment.
 
 ```bash
 gh pr view <PR> --json author,state,headRefOid,title,files
@@ -27,6 +30,15 @@ git rev-list --count FETCH_HEAD..upstream/main    # staleness
 1. **Is it a Dependabot PR?** If not, stop — wrong skill.
 2. **Is it still open?** Dependabot closes and replaces PRs when it re-resolves. Reviewing a corpse, or commenting `@dependabot rebase` on one, wastes a cycle.
 3. **Is it stale?** If it is behind main, **stop and request a rebase**. Every verdict below is computed against the wrong baseline otherwise — a run from before a toolchain change proves nothing about today.
+
+   Then re-read `state` and `headRefOid` before you resume, within a few minutes rather
+   than later — the supersession lands almost immediately. Instead of rebasing, Dependabot
+   may close the PR ("Looks like these dependencies are updatable in another way") and open
+   a replacement carrying the same bumps plus whatever else it re-resolved. Find the
+   successor and check whether your work transfers before redoing any of it.
+
+   Diagnostic worth knowing: a PR that still reports as **behind main after a rebase** is
+   usually closed, not losing a race with incoming commits. Check `state` before theorising.
 4. **Is this change already in flight?** Rebuilding work that already exists is the most expensive mistake available, and it costs one query to avoid. Scope the search to the **dependency**, not the file — every npm bump touches `package.json`, so a file-level check matches everything and tells you nothing:
 
 ```bash
@@ -102,6 +114,10 @@ curl -sfL https://raw.githubusercontent.com/<owner>/<action>/<tag>/action.yml
 ## Phase 4 — Migration and capabilities
 
 - **What breaks for us**, with `file:line`. Nothing that does not apply.
+- **Pushing to the branch ends Dependabot's updates.** If the fix has to live on the
+  Dependabot branch rather than on main, expect Dependabot to stop auto-updating that PR
+  once it carries a commit that is not its own. Staleness becomes yours to handle by hand
+  from then on, so push last, after the PR is otherwise ready to merge.
 - **Coupled PRs.** Some bumps are only correct together — a test runner and its environment package, a client and the types for it. Landing one alone can be worse than landing neither.
 - **What the new version lets us delete.** Upgrade notes are not only about breakage. A new capability can remove a workaround entirely, and this is the part everyone skips.
 
