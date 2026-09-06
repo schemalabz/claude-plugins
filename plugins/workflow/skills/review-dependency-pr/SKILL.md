@@ -138,14 +138,44 @@ Base:             <sha of the base branch> -> <gate result there: pass | N failu
 Reviewed head:    <sha of the PR head you actually ran against>
 Gate on PR:       <result, with a COUNT — not a sample>
 Attribution:      <each failure -> the specific dependency that causes it>
+What we'd gain:   <a measurement, or code this lets us delete. "Staying current"
+                   is not an answer — if that is genuinely all there is, write
+                   that, because it lowers the bar for closing the PR>
 Could not verify: <what a green run does NOT cover here>
 ```
 
 `Base` and `Reviewed head` exist because a verdict is perishable. Dependabot rebases, and a rebase can change the PR's *payload*, not just its base — so a verdict without both SHAs cannot be re-checked later, and silently rots into a claim about a commit nobody can find.
 
+`What we'd gain` exists because a verdict that only answers "can we merge this" is
+half a decision. A blocked major with a large payoff deserves an issue; a blocked
+major with no payoff deserves a close. Same blocker, opposite action, and the
+difference is only visible if someone wrote the upside down.
+
 `Gate on PR` takes a count because a truncated sample reads exactly like a complete result. `tsc ... | head -25` reporting "25 errors" against an actual 77 is indistinguishable from the truth in the write-up, and it understates the work by a factor of three.
 
 Then an evidence table — what was proven, and **how**. For `Could not verify`, state scope honestly: a `pull_request_target` half, a visual change types cannot see, a production-only code path. A test passing on both versions proves the upgrade is safe *for the surface you use*, not in general.
+
+## Acting on the verdict
+
+Dependabot takes commands as PR comments. The closed PR then *is* the record, which
+is why a comment beats a `dependabot.yml` entry for anything provisional: the
+reasoning and the undo end up in the same place a future reader will land.
+
+| Comment | Effect |
+|---|---|
+| `@dependabot rebase` | Rebase. May instead supersede the PR — re-check state after (Phase 0) |
+| `@dependabot ignore this major version` | Closes it, and stops PRs **for that major only** |
+| `@dependabot ignore this dependency` | Closes it, stops all PRs for the dependency |
+| `@dependabot reopen` | Reopens **and clears the ignore** — the undo |
+| `@dependabot close` | Closes without ignoring; it returns when a new version lands |
+
+Put the reasoning and the command in one comment. Two comments leave a bare command
+as the last thing on the thread.
+
+**Check what an ignore would silence before using one.** `ignore this major version`
+covers the whole major, including the later minor that fixes your blocker. If the
+unblock condition is "upstream supports x.1", ignoring major x buries it. Use
+`close` there and let the PR come back.
 
 ## Worked example
 
