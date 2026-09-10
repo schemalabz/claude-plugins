@@ -1,0 +1,56 @@
+{
+  "skill_name": "create-issue",
+  "baseline_skill_commit": "369b390",
+  "run_date": "2026-09-07",
+  "how_to_run": "Two fresh general-purpose agents per case, identical prompt from prompt_template, one with SKILL_PATH = a snapshot of the committed skill, one with the candidate. Run from the opencouncil-tasks checkout so the cwd default is the wrong repo. Grade the preview against the assertions; read both outputs yourself.",
+  "prompt_template": "You are helping a non-technical operations teammate file a GitHub issue. Read and follow the skill instructions in this file exactly: {SKILL_PATH}\n\nThe teammate's report, verbatim:\n---\n{REPORT}\n---\n\nConstraints for this run:\n- You are running from the checkout at /home/kouloumos/schema-labs/projects/opencouncil-tasks (the skill may consult it).\n- Read-only GitHub access only: you may run `gh search`, `gh label list`, `gh repo view`, `gh issue view`. Do NOT run `gh issue create`, do NOT post comments, do NOT edit anything on GitHub, do NOT modify files.\n- You cannot ask the teammate anything. Wherever the skill would have you ask, write the exact questions under a heading \"Questions for the reporter\" and fill in whatever you can from the report.\n- Stop at the point where the skill would show the preview and wait for approval. Your final message must be that preview, exactly as the skill formats it, plus the questions heading if any. Nothing else.",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "ops-report-about-a-generated-document-title",
+      "case_file": "cases/case-55.md",
+      "case_source": "schemalabz/opencouncil-tasks#55, body verbatim (filed 2026-06-23 by ops)",
+      "ground_truth": {
+        "artifact": "a generated minutes .docx (Δημοτική Επιτροπή Ζωγράφου)",
+        "correct_repo": "schemalabz/opencouncil — the speaker title is rendered by src/components/meetings/docx/MinutesDocx.ts",
+        "root_cause": "src/lib/utils/roles.ts simplifyRoleName keeps everything before 'Αντιδήμαρχος'; the person's role is 'Αναπληρωτής Δήμαρχος - Αντιδήμαρχος …'",
+        "reporter_fix_guess": "'His title … must be \"Αντιδήμαρχος\" and nothing else' is a prescription, not an observation",
+        "missing_from_report": "which sessions, a link or document",
+        "verified_by": "reproduction with node on 2026-09-07; live role data via OpenCouncil API"
+      },
+      "assertions": [
+        "A1 Preview carries a WHERE slot naming city, administrative body, and meeting/session — filled from the report or listed under Questions for the reporter",
+        "A2 Preview separates what the document showed (observed) from what it should have shown (expected) as two distinct fields",
+        "A3 Preview carries a SOURCE slot (link, screenshot, or document name) — filled from the report or asked for",
+        "A4 Repo chosen is schemalabz/opencouncil, reasoned from the artifact (a generated minutes document), not defaulted from the current checkout",
+        "A5 Body contains no fix prescription — no sentence of the form 'the system must/should …', 'the logic should be updated', 'the fallback must be removed'",
+        "A6 Evidence the reporter supplied survives into the preview verbatim (names, numbers, links)",
+        "A7 Stops at the preview; runs no gh issue create"
+      ],
+      "notes": "Assertions written before any run. A1–A3 are slot checks (tier 2). A4 is the routing check: run from the -tasks checkout so a default-to-cwd skill picks the wrong repo. A5 is a shape check: the report itself contains the 'must' sentence, so passing means the skill dropped it, not that the input lacked it."
+    },
+    {
+      "id": 1,
+      "eval_name": "ops-report-with-evidence-already-supplied",
+      "case_file": "cases/case-61.md",
+      "case_source": "schemalabz/opencouncil-tasks#61, body verbatim (filed 2026-06-23 by ops; closed 2026-09-07)",
+      "ground_truth": {
+        "artifact": "a generated minutes document, plus a subject page link",
+        "correct_repo": "schemalabz/opencouncil — the displayed Αρ. Απόφασης is rendered there (MinutesDocx.ts, subject.tsx); the linking lives in -tasks but the cause was unknown to the reporter",
+        "reporter_supplied": "session (42nd), item positions (5th/6th/7th extraordinary), shown vs correct numbers (520/2025 vs 503/2025 …), a subject URL, three screenshots",
+        "reporter_fix_guess": "'The system must reliably map … and validate this before generating' — a prescription",
+        "verified_by": "triage on 2026-09-07; fixed by -tasks#84/#85/#96 and opencouncil#623"
+      },
+      "assertions": [
+        "A1 Preview carries a WHERE slot naming city, administrative body, and meeting/session — filled from the report or listed under Questions for the reporter",
+        "A2 Preview separates what the document showed (observed) from what it should have shown (expected) as two distinct fields",
+        "A3 Preview carries a SOURCE slot (link, screenshot, or document name) — filled from the report or asked for",
+        "A4 Repo chosen is schemalabz/opencouncil, reasoned from the artifact (a generated minutes document), not defaulted from the current checkout",
+        "A5 Body contains no fix prescription — no sentence of the form 'the system must/should …'",
+        "A6 Evidence the reporter supplied survives into the preview verbatim — the three number pairs, the session, the URL, the screenshots",
+        "A7 Stops at the preview; runs no gh issue create"
+      ],
+      "notes": "Same assertions; this case tests preservation (A6) rather than elicitation, since the reporter already supplied the evidence. A6 is the one most at risk from a Concept/User Story rewrite."
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Zacharias Stamatakis holds the title of "Αντιδήμαρχος" (Deputy Mayor) within the context of the Municipal Committee. In several minutes documents, he was incorrectly referred to as "Αναπληρωτής Δήμαρχος" or with additional title text. His title in all Municipal Committee minutes must be "Αντιδήμαρχος" and nothing else.

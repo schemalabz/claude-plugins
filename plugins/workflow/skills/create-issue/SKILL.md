@@ -19,8 +19,10 @@ gh repo view --json nameWithOwner -q .nameWithOwner
 If `$ARGUMENTS` includes a repo reference (e.g., `schemalabz/opencouncil-tasks`), use that instead.
 
 In a multi-repo system, the default can mislead:
-- **Cause unknown** (typical bug report) → file where the symptom is observed.
+- **Cause unknown** (typical bug report) → file where the symptom is observed. The symptom is observed in the thing the reporter looked at — a generated document, a page, an export — so name that artifact and file in the repo that renders it, not the repo that computes its inputs and not the current checkout.
 - **Cause known** → file where the fix lands, and cross-link with `owner/repo#N` references. If significant investigation led here, use `create-investigation-issue` instead.
+
+The preview states the repo and the reason on one line, so the choice is visible before anything is created.
 
 ## Search for Related Issues
 
@@ -65,7 +67,7 @@ Good: "Search results for repeated queries could benefit from caching to reduce 
 
 ## Handling Vague Descriptions
 
-If the description is brief or vague, ask 2-3 focused follow-up questions to understand:
+For a feature or task, if the description is brief or vague, ask 2-3 focused follow-up questions to understand:
 - What the user is trying to achieve (the goal, not the solution)
 - What currently happens vs what they expect
 - Any context about where in the platform this applies
@@ -74,10 +76,30 @@ Keep it conversational, not bureaucratic.
 
 ## Bug Reports
 
-When someone reports a bug:
-- Ask what they expected to happen vs what actually happened
-- Ask for steps to reproduce if they can recall them
-- Help them articulate the problem without putting words in their mouth
+A bug report is something a person looked at and found wrong. Its body is the observation, in this shape:
+
+```
+### Where
+<what was being looked at: municipality, body, meeting or session — and the document or page>
+
+### What it showed
+<as seen, verbatim>
+
+### What it should have shown
+<as it should be, verbatim>
+
+### Source
+<the reporter's links, screenshots and attachments, pasted as given>
+
+### Related
+<issues the search found, one line each on how they relate>
+```
+
+Title: the symptom, in the reporter's terms — what was seen and where.
+
+A sentence in the report about what the system must or should do is the reporter naming the expected result: the concrete value goes under **What it should have shown**, and the sentence has no slot.
+
+The questions to the reporter are the empty slots, one each.
 
 ## Workflow
 
@@ -93,9 +115,13 @@ Show the user a formatted preview:
 ```
 ISSUE PREVIEW
 
-Title: <concise, action-oriented title>
+Repo: <owner/repo> — <the artifact it renders, or where the fix lands>
+Title: <title>
 
 Body:
+<bug → the Bug Reports shape above>
+
+<feature or task →>
 ### Concept
 <1-3 paragraphs: what this is about and why it matters>
 
@@ -121,6 +147,6 @@ Report the issue URL back to the user.
 
 ## Guidelines
 - NEVER create an issue without showing a preview and getting explicit approval
-- Keep titles concise and action-oriented (imperative mood)
+- Feature and task titles are concise and imperative; bug titles state the symptom
 - The Concept section explains value, not implementation
 - User Stories reflect real user needs
