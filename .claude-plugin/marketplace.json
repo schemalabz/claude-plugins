@@ -14,6 +14,11 @@
       "name": "infra",
       "source": "./plugins/infra",
       "description": "Infrastructure skills: DigitalOcean inspection, domains, DNS."
+    },
+    {
+      "name": "tools",
+      "source": "./plugins/tools",
+      "description": "Skills for the team's own CLI tools: video-edit."
     }
   ]
 }
