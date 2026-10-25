@@ -32,6 +32,46 @@
         "States what the passing unit-test suite does NOT prove"
       ],
       "notes": "A bot-comment assertion was drafted and dropped: #673 had zero bot reviews at the time, so it would have been vacuous. Assertions deliberately test process, not the error count — the head moves and a number-pinned assertion goes stale."
+    },
+    {
+      "id": 1,
+      "eval_name": "surface-coverage-not-ci-green",
+      "prompt": "Review Dependabot PR #890 in schemalabz/opencouncil as it stood at head e2c9f7923 on base 009e4fb3c, and give me a verdict on whether we should merge it. I want to be confident nothing breaks.",
+      "pinned_base": "009e4fb3c812fe1e89433bb0d92d0ac104d4d684",
+      "pinned_head": "e2c9f792382a91337d2a3e5aea3fa8e9d8c37ff2",
+      "run_constraints": "The PR is merged now: treat it as open at the pinned head. Post nothing. No next build, no dev server, no full test suites in either arm (same constraint for both, so the comparison is about analysis). npm ci, tsc, npm diff, reading CI logs and read-only doctl are allowed.",
+      "ground_truth": {
+        "direct_changes": "45 root dependencies change in package-lock.json, plus direct dependencies of workspace packages: @google/genai 2.27.0->2.30.0 (packages/subject-images) and libphonenumber-js 1.13.14->1.13.15 (packages/ui). An inventory that reads only the root package.json misses these two (the orchestrator did, 2026-10-20).",
+        "nix_failure": "@posthog/nextjs-config 1.11.1->1.11.3 moves @posthog/cli to ~0.18.10; @posthog/webpack-plugin 1.7.1 pins ~0.16.2, so npm nests a second cli copy; flake.nix mkNpmDeps patches only the top-level copy; the nested postinstall reaches github.com in the sandbox (EAI_AGAIN).",
+        "tsc_failure": "TS2741 at src/lib/ai.ts:318: @anthropic-ai/sdk 0.135 adds required Usage.speed.",
+        "deploy_time_change": "nextjs-config 1.11.3 adds a Turbopack native-debug-ID path: posthog-cli release resolve at config load (a non-zero exit fails the build), sourcemap upload instead of process, deletion of all .map files. Both deployed environments run the source-map step at build time, so both run the new path.",
+        "environments": "Staging lacks the cache integration that production has (visible in the deployment spec and the staging run log), so nextjs-cache-handler 3.4 is first exercised for real in production. Bot PRs get no preview (the preview job skips bot authors).",
+        "untested_surfaces": "No test executes: AWS SDK S3 paths (s3.ts, presigned-url route, set-acl), nextjs-cache-handler, react-email rendering (mocked), marked, react-easy-crop, posthog-node/@posthog/mcp, most Radix primitives (1 rendering test file). mcp-handler had no test before the review.",
+        "gain": "next 16.4.x security fixes (GHSA-p3m5-59mp-jv5r, GHSA-2464-fhr4-w9xw); nextjs-cache-handler 3.4 seeds the keys Next >=16.3.8 reads.",
+        "verified_by": "2026-10-20: CI logs, local tsc, a local production build, a manual surface pass over every untested package, and the staging and production deploy logs after the merge."
+      },
+      "assertions": {
+        "process": [
+          "Builds the list of changed packages from the lockfile diff (or npm ls on both sides), and states its size; does not rely on the PR title or body for it",
+          "Gives every changed runtime or build-time package (or a named group of them) its own evidence level, so an untested package is visible as a row, not folded into one free-text line",
+          "Reads the package's own diff (npm diff or the installed dist) for at least one build/deploy-time package, and names what changes at deploy time",
+          "For each item without evidence, names the environment that can produce it (local test, local build, preview, staging after merge, production only)",
+          "Derives staging-versus-production differences from the deployment spec or logs rather than assuming staging mirrors production",
+          "Includes a post-merge watch list",
+          "Includes a list of tests the repo should have for these dependencies, separate from the merge verdict"
+        ],
+        "correctness": [
+          "Attributes the Nix Checks failure to the nested @posthog/cli copy, not to 'the group'",
+          "Attributes the tsc error to the @anthropic-ai/sdk Usage type change",
+          "Claims no package change that is not in the lockfile diff (note: @google/genai and libphonenumber-js ARE in it, through workspace packages)",
+          "Does not claim that staging exercises the Valkey cache"
+        ],
+        "tie": [
+          "Names the Next 16.4 security fixes as the main gain",
+          "Verdict is needs-work (or equivalent) with the two concrete fixes"
+        ]
+      },
+      "notes": "Assertions written 2026-10-25 before the candidate skill and before any run. Process assertions are what the candidate is supposed to cause; correctness and tie tiers are expected to hold in both arms. Result 2026-10-25 (one run per arm): committed skill 0/7 process, candidate 7/7; both 4/4 correctness and 2/2 tie; the candidate used about 50% more tokens. Some ground truth depends on the deployed environments and can drift; re-check it before grading a later run."
     }
   ]
 }
