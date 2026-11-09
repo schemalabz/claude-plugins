@@ -72,6 +72,73 @@
         ]
       },
       "notes": "Assertions written 2026-10-25 before the candidate skill and before any run. Process assertions are what the candidate is supposed to cause; correctness and tie tiers are expected to hold in both arms. Result 2026-10-25 (one run per arm): committed skill 0/7 process, candidate 7/7; both 4/4 correctness and 2/2 tie; the candidate used about 50% more tokens. Some ground truth depends on the deployed environments and can drift; re-check it before grading a later run."
+    },
+    {
+      "id": 2,
+      "eval_name": "bundle-built-not-loaded",
+      "prompt": "Review Dependabot PR #938 in schemalabz/opencouncil as it stood at head 71a789aa0fec9aea8752b46153998105c1fff769, with fdb60324ba0e4013cca93868e36e2d1d974e3542 as main, and give me a verdict on whether we should merge it.",
+      "pinned_base": "fdb60324ba0e4013cca93868e36e2d1d974e3542",
+      "pinned_head": "71a789aa0fec9aea8752b46153998105c1fff769",
+      "run_constraints": "The PR is merged now: treat it as open at the pinned head and treat the pinned base as main; do not read commits after the base. Post nothing, push nothing. nix builds, npm ci, tsc, jest of single folders and npm diff are allowed; no next build.",
+      "ground_truth": {
+        "payload": "yargs 17.7.2 -> 18.2.0 (root and packages/seed-pipeline); @types/yargs stays (yargs 18 types only ./browser).",
+        "ci": "Nix Checks, Integration and Notis green on the PR head.",
+        "failure": "Both Nix seed bundles (seed-pipeline-bundle, seed-bundle) BUILD but crash at load: esbuild --format=cjs replaces import.meta with {}, so createRequire(import.meta.url) in yargs 18 / yargs-parser 22 throws ERR_INVALID_ARG_VALUE. The flake checks build the bundles but never run them. Previews run the seed bundle at database init, so every migration-PR preview would fail.",
+        "fix": "define import.meta.url as the bundle file URL in both esbuild calls + an install check that runs each bundle with --help (54756cdb5, merged as part of #938 on 2026-11-07).",
+        "landing": "The fix exists only because of the bump and needs no preview -> push onto the Dependabot branch (what was done).",
+        "verified_by": "2026-11-07 review (938.md) + orchestrator build of both bundles on the fixed head, and CI installCheckPhase after the merge."
+      },
+      "assertions": {
+        "process": [
+          "Lists the Nix seed bundles (or 'the esbuild bundles') as build targets that load yargs, separately from Jest/tsx",
+          "Runs at least one built bundle (for example its --help) on the PR head, not only builds it, and reports what happened",
+          "Reviews the pinned head (rebased locally if needed) without asking Dependabot to rebase and without posting",
+          "The verdict states the exact payload versions",
+          "Names where a fix would land (onto the Dependabot branch or a separate PR) and why"
+        ],
+        "correctness": [
+          "Reports that the bundles crash at load on the PR head, with the import.meta/createRequire cause",
+          "States that CI being green does not cover the bundles' runtime"
+        ],
+        "tie": [
+          "Overall clarity and completeness of the report (inventory, verdict, evidence)"
+        ]
+      },
+      "notes": "Harvested from the 2026-11-07 round. The baseline skill only asks whether CI builds each target; the candidate asks whether anything runs it."
+    },
+    {
+      "id": 3,
+      "eval_name": "superseded-group-build-decision",
+      "prompt": "Review Dependabot PR #963 in schemalabz/opencouncil as it stood at head 09e21ccb43aeda3ca557ae4877b2c16829a748f7, with fdb60324ba0e4013cca93868e36e2d1d974e3542 as main, and give me a verdict on whether we should merge it. It replaced #961, which we already reviewed: that report is at /home/kouloumos/schema-labs/projects/opencouncil/.scratch/dependabot-2026-11-07/961.md.",
+      "pinned_base": "fdb60324ba0e4013cca93868e36e2d1d974e3542",
+      "pinned_head": "09e21ccb43aeda3ca557ae4877b2c16829a748f7",
+      "run_constraints": "Treat the PR as open at the pinned head and the pinned base as main; do not read commits after the base. Post nothing, push nothing. One local production build is allowed (dummy env, local DB, no analytics keys). Do not read 963.md, RUN.md or other reports of this round except 961.md.",
+      "ground_truth": {
+        "delta_vs_961": "@posthog/nextjs-config 1.12.0->1.12.1, docx 9.15.1->9.15.2, framer-motion 14.6.0->14.9.1 (new in the group), lucide 1.66->1.68, mapbox-gl 3.34.1->3.34.2, posthog-js 1.444.4->1.445.4, next 16.4.4->16.4.5; everything else identical.",
+        "ci": "Nix Checks FAIL: 9 TS errors in 7 files + 4 jest suites, all 'Cannot find module jszip' — docx 9.15 replaced jszip with fflate and 7 tests imported jszip undeclared. Fix: shared fflate test helper (7c22d322b from the 961 review).",
+        "build_risk": "@posthog/nextjs-config 1.12.1 writes the release id into .next/server/chunks/[turbopack]_runtime.js and .../ssr/[turbopack]_runtime.js after compile on builds with POSTHOG keys (staging, production) and THROWS if neither exists. A local build on Next 16.4.5 showed both files exist; the hook writes one line to each.",
+        "next": "16.4.5 already in #963, so 961's next-16.4.5 commit is not needed.",
+        "landing": "The docx helper exists only because of the docx bump; no preview needed -> push onto the Dependabot branch, merge commit (what was done).",
+        "verified_by": "2026-11-07 delta review (963.md), the orchestrator's local build and injection probe, the staging build log of 09e830b after the merge."
+      },
+      "assertions": {
+        "process": [
+          "Diffs the payload against #961's reviewed head and scopes new work to the changed packages, reusing 961's evidence for the rest",
+          "Marks a build as needed for @posthog/nextjs-config and/or next, and runs a local production build (or carries the change into a person-opened PR for a preview) BEFORE giving a merge-ready verdict, instead of deferring the build to staging",
+          "Reads @posthog/nextjs-config's own diff and names what the new version writes or how it can fail the build",
+          "Includes a capability scan over the version range of the changed packages",
+          "Names where the CI fix lands (onto the Dependabot branch) and why",
+          "Lists test debt, including at least one hand-rebuilt harness to commit as a test"
+        ],
+        "correctness": [
+          "Attributes the Nix Checks failure to docx 9.15 dropping jszip (undeclared jszip imports in tests)",
+          "Recognises that #963 already carries next 16.4.5, so a separate Next bump is not needed"
+        ],
+        "tie": [
+          "Overall clarity and completeness of the report"
+        ]
+      },
+      "notes": "Harvested from the 2026-11-07 round. Tests the build decision (Andreas: 'if a build is needed in order to test it, it should happen'), the delta review, the capability scan and the landing policy."
     }
   ]
 }
